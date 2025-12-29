@@ -27,6 +27,19 @@ Abaixo está disponível a estrutura utilizada por esse projeto para organizar o
             └── 📄 restore.log      (log da restauração do banco)
 ```
 
+## Remoção de UDFs
+
+Foi-se examinada a estrutura dos bancos do SCGWin na versão 3.0 e foi identificada a presença das seguintes UDFs, algumas das quais não há dependências e outras sim:
+
+- DOW
+- FLOOR
+- LTRIM
+- RTRIM
+- SRIGHT
+- STRLEN
+- SUBSTR
+- TRUNCATE
+
 ## Diagnóstico de problemas
 
 Em uma pasta com os executáveis do **Firebird 3.0** (somente o `isql.exe` é realmente necessário nessa etapa), utilize esse comando para extrair a estrutura (metadados) do banco `3.0` para um script `sql` capaz de recriá-la.
@@ -50,3 +63,10 @@ Em um diretório com os executáveis do **Firebird 5.0** (somente o `isql.exe` �
 ```
 
 Nessa etapa, provavelmente surgirão um monte de erros no arquivo de `log` especificado. Esse é o momento chato de verificá-los e corrigí-los manualmente. Para evitar isso nas outras migrações, um script genérico capaz de solucionar esses erros está sendo desenvolvido.
+
+## Refatoração dos metadados
+
+Quando o `isql` gera os metadados do banco, há duas imperfeições que impedem o teste bem sucedido da clonagem na versão 5.0:
+
+- O uso de LOCAL sem aspas
+- O uso de GRANT ON sem o tipo de permissão em ALT_CUSTOMATPRIMA e LOTE
