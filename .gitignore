@@ -7,6 +7,9 @@
 # Logs
 *.log
 
+# Metadados temporários
+**/metadados.sql
+
 bin/
 obj/
 .ionide/
