@@ -1,5 +1,32 @@
 # Migração do 3.0 para o 5.0
 
+## Estrutura
+
+Abaixo está disponível a estrutura utilizada por esse projeto para organizar o processo de migração.
+
+```txt
+🔥 Firebird v3.0
+└── 🖥️ <sistema>
+    ├── 🗄️ bancos
+    │   └── 📁 <banco>
+    │       ├── 🧬 in.fdb           (banco de origem)
+    │       ├── 🧾 metadados.sql    (ddl gerado do banco)
+    │       ├── 📦 backup.fbk       (backup gerado do banco)
+    │       └── 📄 backup.log       (log do backup)
+    └── 🛠️ reparador.sql            (reparador de inconsistências dos bancos)
+```
+
+```txt
+🔥 Firebird v5.0
+└── 🖥️ <sistema>
+    └── 🗄️ bancos
+        └── 📁 <banco>
+            ├── 🧪 teste.fdb        (banco de teste criado com os metadados do banco de origem)
+            ├── 📄 teste.log        (log da criação do banco de teste)
+            ├── 🧬 out.fdb          (banco de destino restaurado a partir de um backup)
+            └── 📄 restore.log      (log da restauração do banco)
+```
+
 ## Diagnóstico de problemas
 
 Em uma pasta com os executáveis do **Firebird 3.0** (somente o `isql.exe` é realmente necessário nessa etapa), utilize esse comando para extrair a estrutura (metadados) do banco `3.0` para um script `sql` capaz de recriá-la.
