@@ -28,4 +28,4 @@ $db_path = "${db_dir}\in.fdb"
 $log_path = "${db_dir}\reparo.log"
 
 # Executa a reparação no banco de dados e armazena os logs
-isql -user SYSDBA -password masterkey "$db_path" -i "$repair_script" -o "$log_path" -m
+isql -user SYSDBA -password masterkey "$db_path" -charset ISO8859_1 -i "$repair_script" -o "$log_path" -m
