@@ -1,5 +1,15 @@
 # Migração do 3.0 para o 5.0
 
+## Passo a passo
+
+1. Remover UDFs
+2. Reparar banco
+3. Extrair metadados
+4. Ajeitar metadados
+5. Clonar com metadados
+6. Backup e restore
+7. Adicionar trigger global
+
 ## Estrutura
 
 Abaixo está disponível a estrutura utilizada por esse projeto para organizar o processo de migração.
