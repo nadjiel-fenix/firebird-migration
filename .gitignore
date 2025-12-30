@@ -2,13 +2,16 @@
 *.fdb
 
 # Backups de bancos de dados
-*.bkp
+*.fbk
 
 # Logs
 *.log
 
 # Metadados temporários
 **/metadados.sql
+
+# Arquivos ou pastas temporárias
+*.temp
 
 bin/
 obj/
