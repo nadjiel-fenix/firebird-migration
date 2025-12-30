@@ -24,4 +24,5 @@ $db_dir = ".\firebird-v${versao}\${sistema}\bancos\${banco}"
 $db_path = "${db_dir}\in.fdb"
 $metadata_path = "${db_dir}\metadados.sql"
 
-isql $db_path -x -o $metadata_path
+# Extrai os metadados do banco utilizando o charset padrão ISO8859_1
+isql $db_path -charset ISO8859_1 -x -o $metadata_path

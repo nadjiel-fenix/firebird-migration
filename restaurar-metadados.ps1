@@ -47,4 +47,4 @@ $script = "CREATE DATABASE '$db_path' PAGE_SIZE 16384 DEFAULT CHARACTER SET ISO8
 $script | isql -q
 
 # Clona o BD de origem a partir dos metadados
-isql -user SYSDBA -password masterkey "$db_path" -i "$metadata_path" -o "$log_path" -m
+isql -user SYSDBA -password masterkey "$db_path" -charset ISO8859_1 -i "$metadata_path" -o "$log_path" -m
