@@ -1,10 +1,10 @@
-
+# TODO: adicionar tratamento para banco não encontrado
 
 param (
     [Parameter(Position = 0, Mandatory)]
     [Alias('versao')]
-    [ValidateSet(3, 5)]
-    [int]$version,
+    [ValidateSet("2.5", "3", "5")]
+    [string]$version,
 
     [Parameter(Position = 1, Mandatory)]
     [Alias('sistema')]
