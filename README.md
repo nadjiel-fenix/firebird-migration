@@ -1,82 +1,77 @@
 # Migração do 3.0 para o 5.0
 
-## Passo a passo
+Esse projeto é um framework que ajuda a acelerar a migração e outros processos do Firebird de modo organizado. Para poder utilizá-lo, você precisa das versões desejadas propriamente instaladas.
 
-1. Remover UDFs
-2. Reparar banco
-3. Extrair metadados
-4. Ajeitar metadados
-5. Clonar com metadados
-6. Backup e restore
-7. Adicionar trigger global
+O funcionamento desse projeto depende na sua estrutura de diretórios que está melhor descrita na seção [Estrutura](#estrutura).
 
-## Estrutura
+A principal configuração que deve ser feita antes de utilizar o projeto é atrelar os caminhos das instalações do Firebird na sua máquina. Isso é feito por meio do arquivo `config.json` dentro de cada diretório de versão do Firebird nesse projeto. Alguns caminhos padrão já estão definidos, mas eles podem ser diferentes na sua máquina, o que requer alterações.
 
-Abaixo está disponível a estrutura utilizada por esse projeto para organizar o processo de migração.
+## 🚶‍♂️ Passo a passo
+
+Aqui está um passo a passo do que é necessário no processo de migração para o Firebird 5, para guia:
+
+```mermaid
+graph TD
+    Start([Início]) --> Step1[1. Remover UDFs]
+
+    Step1 --> Sync{Execução Paralela}
+
+    subgraph BackupProcess [Processo de Extração]
+        Sync --> Step2a[2a. Backup de Dados]
+        Sync --> Step2b[2b. Extração de Metadados]
+    end
+
+    Step2a --> Step3[3. Restore no Destino]
+
+    Step3 --> Success{Sucesso?}
+
+    Success -- Sim --> Step4[4. Adicionar Trigger Global]
+    Step4 --> End([Fim])
+
+    Success -- Não --> Error1[4. Ajeitar Metadados]
+    Error1 --> Error2[5. Diagnosticar com Metadados]
+    Error2 --> Error3[6. Corrigir erros no banco]
+    Error3 -->|Retornar ao Backup| Sync
+```
+
+## 🗂 Estrutura
+
+Abaixo está disponível as estruturas utilizadas por esse projeto para organizar o processo de migração. Primeiro é mostrado um exemplo de estrutura de entrada (o banco de origem) e depois de saída (o banco de destino).
 
 ```txt
-🔥 Firebird v3.0
-└── 🖥️ <sistema>
-    ├── 🗄️ bancos
-    │   └── 📁 <banco>
-    │       ├── 🧬 in.fdb           (banco de origem)
-    │       ├── 🧾 metadados.sql    (ddl gerado do banco)
-    │       ├── 📦 backup.fbk       (backup gerado do banco)
-    │       └── 📄 backup.log       (log do backup)
-    └── 🛠️ reparador.sql            (reparador de inconsistências dos bancos)
+firebird-v<versao>
+└── <sistema>
+    └── bancos
+        └── <banco>
+            ├── IN.FDB           (banco de origem)
+            ├── metadados.sql    (ddl gerado do banco)
+            ├── backup.fbk       (backup gerado do banco)
+            └── backup.log       (log do backup)
 ```
 
 ```txt
-🔥 Firebird v5.0
-└── 🖥️ <sistema>
-    └── 🗄️ bancos
-        └── 📁 <banco>
-            ├── 🧪 teste.fdb        (banco de teste criado com os metadados do banco de origem)
-            ├── 📄 teste.log        (log da criação do banco de teste)
-            ├── 🧬 out.fdb          (banco de destino restaurado a partir de um backup)
+firebird-v<versao>
+└── <sistema>
+    └── bancos
+        └── <banco>
+            ├── CLONE.FDB        (banco de teste criado com os metadados do banco de origem)
+            ├── clone.log        (log da criação do banco de teste)
+            ├── OUT.FDB          (banco de destino restaurado a partir de um backup)
             └── 📄 restore.log      (log da restauração do banco)
 ```
 
-## Remoção de UDFs
+## 🩺 Diagnóstico de problemas
 
-Foi-se examinada a estrutura dos bancos do SCGWin na versão 3.0 e foi identificada a presença das seguintes UDFs, algumas das quais não há dependências e outras sim:
+Para diagnosticar problemas na migração, esse projeto provê dois scripts:
 
-- DOW
-- FLOOR
-- LTRIM
-- RTRIM
-- SRIGHT
-- STRLEN
-- SUBSTR
-- TRUNCATE
+- `extrair-metadados.ps1`: extrai todo o SQL que compõe a estrutura de um banco de origem
+- `restaurar-metadados.ps1`: usa o SQL extraido para criar um novo banco na versão desejada, deixando um `.log` do processo com os erros encontrados, para que possam ser corrigidos diretamente no banco original
 
-## Diagnóstico de problemas
+Alguns problemas existem com a extração do SQL, entretanto. O código gerado traz alguns identificadores do banco com nome "LOCAL" sem propriamente envolvê-los em aspas, como é necessário na versão 5. Para corrigir isso, ainda é necessária uma intervenção manual.
 
-Em uma pasta com os executáveis do **Firebird 3.0** (somente o `isql.exe` é realmente necessário nessa etapa), utilize esse comando para extrair a estrutura (metadados) do banco `3.0` para um script `sql` capaz de recriá-la.
-
-```sh
-.\isql <origem.fdb> -x -o <metadados.sql>
-```
-
-No arquivo `sql` criado, descomente a linha semelhante à seguir, corrigindo o caminho do banco de dados para apontar para aonde você quer que ele seja criado.
-
-```sql
-CREATE DATABASE <destino.fdb> PAGE_SIZE 16384 DEFAULT CHARACTER SET ISO8859_1;
-```
-
-Esse `sql` criado traz identificadores do banco com nome "LOCAL" sem propriamente envolvê-los em aspas, como é necessário na versão 5. Para corrigir isso, use o `refatorador.py`.
-
-Em um diretório com os executáveis do **Firebird 5.0** (somente o `isql.exe` é realmente necessário nessa etapa), use o comando a seguir para recriar a estrutura do banco em um novo banco.
-
-```sh
-.\isql -i <metadados.sql> -o <erro.log> -m
-```
-
-Nessa etapa, provavelmente surgirão um monte de erros no arquivo de `log` especificado. Esse é o momento chato de verificá-los e corrigí-los manualmente. Para evitar isso nas outras migrações, um script genérico capaz de solucionar esses erros está sendo desenvolvido.
-
-## Refatoração dos metadados
+## ⛏ Refatoração dos metadados
 
 Quando o `isql` gera os metadados do banco, há duas imperfeições que impedem o teste bem sucedido da clonagem na versão 5.0:
 
-- O uso de LOCAL sem aspas
-- O uso de GRANT ON sem o tipo de permissão em ALT_CUSTOMATPRIMA e LOTE
+- O uso de `LOCAL` sem aspas
+- O uso de `GRANT  ON` sem o tipo de permissão em `ALT_CUSTOMATPRIMA` e `LOTE`
