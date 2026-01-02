@@ -2,13 +2,13 @@
 param (
     [Parameter(Position = 0, Mandatory)]
     [Alias('versao_inicial')]
-    [ValidateSet(3, 5)]
-    [int]$version_in,
+    [ValidateSet("2.5", "3", "5")]
+    [string]$version_in,
     
     [Parameter(Position = 1, Mandatory)]
     [Alias('versao_final')]
-    [ValidateSet(3, 5)]
-    [int]$version_out,
+    [ValidateSet("2.5", "3", "5")]
+    [string]$version_out,
 
     [Parameter(Position = 2, Mandatory)]
     [Alias('sistema')]
